@@ -142,8 +142,15 @@ Update only what is required in `CMakeLists.txt`:
 
 Also update:
 
-- crate/package version in `CMakeLists.txt` `project()` or any version tracking
+- version in `CMakeLists.txt` `project()` — see versioning rule below
 - any C++ API changes if the LLVM version has breaking changes
+
+Versioning rule for this repo:
+
+- **Upstream tracking release**: use the upstream LLVM version as the plugin version tag verbatim (e.g., LLVM `22.1.1` → tag `22.1.1`). Update the `VERSION` field in `CMakeLists.txt` `project()` to match.
+- **Plugin-only fix** (bug fix, foro ABI change, packaging fix, workflow fix — no LLVM version change): append `-<n>` to the last upstream version, where n starts at 1 and increments (e.g., `22.1.1-1`, `22.1.1-2`).
+- When a new upstream tracking release happens, n resets — the bare upstream version is used again.
+- Semver ordering is intentionally not preserved for the `-<n>` suffix. These tags are GitHub release identifiers, not semver coordinates.
 
 ## Step 4: Local Validation
 

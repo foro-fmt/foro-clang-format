@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(foro-clang-format VERSION 0.3.0)
+project(foro-clang-format VERSION 22.1.1)
 
 set(CMAKE_CXX_STANDARD 20)
 
