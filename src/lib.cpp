@@ -122,10 +122,8 @@ static auto format_range(const std::unique_ptr<llvm::MemoryBuffer> code,
         FormatStyle->QualifierOrder = {Qualifiers.begin(), Qualifiers.end()};
     }
 
-    if (SortIncludes)
-        FormatStyle->SortIncludes = FormatStyle::SI_CaseSensitive;
-    else
-        FormatStyle->SortIncludes = FormatStyle::SI_Never;
+    FormatStyle->SortIncludes.Enabled = SortIncludes;
+    FormatStyle->SortIncludes.IgnoreCase = false;
 
     unsigned CursorPosition = Cursor;
     Replacements Replaces =
@@ -180,9 +178,9 @@ static auto format_range(const std::string str,
     IntrusiveRefCntPtr<llvm::vfs::InMemoryFileSystem> InMemoryFileSystem(
         new llvm::vfs::InMemoryFileSystem);
     FileManager Files(FileSystemOptions(), InMemoryFileSystem);
+    DiagnosticOptions DiagOpts;
     DiagnosticsEngine Diagnostics(
-        IntrusiveRefCntPtr<DiagnosticIDs>(new DiagnosticIDs),
-        new DiagnosticOptions);
+        IntrusiveRefCntPtr<DiagnosticIDs>(new DiagnosticIDs), DiagOpts);
     SourceManager Sources(Diagnostics, Files);
     FileID ID = createInMemoryFile("<irrelevant>", *Code, Sources, Files,
                                    InMemoryFileSystem.get());
