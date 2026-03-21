@@ -1,11 +1,10 @@
-name: Release
+name: Release Verify
 permissions:
-  "contents": "write"
+  "contents": "read"
 
 on:
-  push:
-    tags:
-      - '**[0-9]+.[0-9]+.[0-9]+*'
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build-local-artifacts:
@@ -26,9 +25,6 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      #      - name: enable windows longpaths
-      #        run: |
-      #          git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - name: Install cmake and jq (Linux)
@@ -41,7 +37,7 @@ jobs:
         env:
           DLL_PACK_TARGET: ${{ matrix.target }}
           BUILD_OUT_DIR: ./build
-          DLL_PACK_GH_TAG: ${{ github.ref_name }}
+          DLL_PACK_GH_TAG: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
         run: bash ./dll-pack-build-local.sh
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -72,32 +68,3 @@ jobs:
         with:
           name: artifacts-build-global
           path: artifacts
-
-  host:
-    needs:
-      - build-local-artifacts
-      - build-global-artifacts
-    if: ${{ startsWith(github.ref, 'refs/tags/') && always() && (needs.build-global-artifacts.result == 'skipped' || needs.build-global-artifacts.result == 'success') && (needs.build-local-artifacts.result == 'skipped' || needs.build-local-artifacts.result == 'success') }}
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    runs-on: "ubuntu-latest"
-    steps:
-      - uses: actions/checkout@v4
-      - name: Fetch artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: artifacts-build-global
-          path: artifacts
-      - name: Get the tag name
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-      - name: Create GitHub Release
-        env:
-          # todo
-          PRERELEASE_FLAG: ""
-          ANNOUNCEMENT_TITLE: "${{ env.TAG_NAME }}"
-          ANNOUNCEMENT_BODY: "woohoo!"
-          RELEASE_COMMIT: "${{ github.sha }}"
-        run: |
-          echo "$ANNOUNCEMENT_BODY" > $RUNNER_TEMP/notes.txt
-
-          gh release create "${{ env.TAG_NAME }}" --target "$RELEASE_COMMIT" $PRERELEASE_FLAG --title "$ANNOUNCEMENT_TITLE" --notes-file "$RUNNER_TEMP/notes.txt" artifacts/*
