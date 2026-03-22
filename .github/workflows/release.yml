@@ -35,7 +35,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: Install cmake and jq (Linux)
         if: runner.os == 'Linux'
-        run: apt-get update && apt-get install -y cmake jq
+        run: apt-get update && apt-get install -y jq python3-pip && python3 -m pip install cmake
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: Install dll-pack-builder
         run: uv tool install git+https://github.com/foro-fmt/dll-pack-builder@1e90b63
