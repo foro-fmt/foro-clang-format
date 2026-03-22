@@ -14,6 +14,7 @@ jobs:
       matrix:
         include:
           - runner: 'ubuntu-24.04'
+            container: 'buildpack-deps:focal'
             target: 'x86_64-unknown-linux-gnu'
           - runner: 'macos-15-intel'
             target: 'x86_64-apple-darwin'
@@ -22,6 +23,7 @@ jobs:
           - runner: 'windows-2022'
             target: 'x86_64-pc-windows-msvc'
     runs-on: ${{ matrix.runner }}
+    container: ${{ matrix.container }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -29,7 +31,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: Install cmake and jq (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y cmake jq
+        run: apt-get update && apt-get install -y cmake jq
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: Install dll-pack-builder
         run: uv tool install git+https://github.com/foro-fmt/dll-pack-builder@1e90b63
