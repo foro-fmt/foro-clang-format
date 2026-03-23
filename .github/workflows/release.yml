@@ -94,12 +94,12 @@ jobs:
         run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       - name: Create GitHub Release
         env:
-          # todo
           PRERELEASE_FLAG: ""
-          ANNOUNCEMENT_TITLE: "${{ env.TAG_NAME }}"
-          ANNOUNCEMENT_BODY: "woohoo!"
           RELEASE_COMMIT: "${{ github.sha }}"
         run: |
-          echo "$ANNOUNCEMENT_BODY" > $RUNNER_TEMP/notes.txt
-
-          gh release create "${{ env.TAG_NAME }}" --target "$RELEASE_COMMIT" $PRERELEASE_FLAG --title "$ANNOUNCEMENT_TITLE" --notes-file "$RUNNER_TEMP/notes.txt" artifacts/*
+          if [ ! -s RELEASE_NOTES.md ] || grep -qi "TODO\|placeholder" RELEASE_NOTES.md; then
+            echo "Error: RELEASE_NOTES.md is missing or contains placeholder text." >&2
+            echo "Write release notes in RELEASE_NOTES.md and commit before pushing the tag." >&2
+            exit 1
+          fi
+          gh release create "${{ env.TAG_NAME }}" --target "$RELEASE_COMMIT" $PRERELEASE_FLAG --title "${{ env.TAG_NAME }}" --notes-file RELEASE_NOTES.md artifacts/*
